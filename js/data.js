@@ -1,179 +1,117 @@
+const MASTER = {
+  name: 'Алиса',
+  city: 'Воронеж',
+  tagline: 'Создаю взгляд, который запоминается',
+  tg: '@AliceV_36',
+  phone: '+7 (900) 000-00-00',
+  instagram: '@alice.lash',
+  schedule: '2/2, с 10:00 до 20:00',
+  about: [
+    'Я мастер наращивания ресниц в Воронеже. Влюблена в свою работу и в то, как преображаются глаза после процедуры.',
+    'Использую только премиум-материалы, слежу за новыми техниками и подбираю всё индивидуально.'
+  ],
+  stats: [
+    { value: '2+', label: 'года опыта' },
+    { value: '50+', label: 'довольных клиенток' },
+    { value: '200+', label: 'выполненных работ' }
+  ]
+};
+
 const SERVICES = [
   {
-    id: 1,
-    category: 'lash',
-    name: 'Классическое наращивание',
-    price: 1500,
-    duration: '60 мин',
-    description: '1 искусственная ресница на 1 натуральную. Максимально естественный вид, подходит для любого типа глаз.',
-    isPopular: true,
-    order: 1,
+    id: 1, name: 'Классическое наращивание', price: 1500, duration: '60 мин',
+    category: 'lash', description: '1 искусственная на 1 натуральную. Естественный объём, натуральный вид.',
+    gradient: 'linear-gradient(135deg, #667eea, #764ba2)', isPopular: true
   },
   {
-    id: 2,
-    category: 'lash',
-    name: 'Объёмное наращивание 2D',
-    price: 2000,
-    duration: '90 мин',
-    description: '2 тонкие ресницы на каждую натуральную. Лёгкий объём без утяжеления взгляда.',
-    isPopular: true,
-    order: 2,
+    id: 2, name: '2D объём', price: 1800, duration: '90 мин',
+    category: 'lash', description: '2 тонкие реснички на 1 натуральную. Лёгкая пушистость без тяжести.',
+    gradient: 'linear-gradient(135deg, #f093fb, #f5576c)', isPopular: true
   },
   {
-    id: 3,
-    category: 'lash',
-    name: 'Объёмное наращивание 3D',
-    price: 2500,
-    duration: '120 мин',
-    description: 'Пушистый выразительный взгляд. 3 ресницы на каждую натуральную.',
-    isPopular: true,
-    order: 3,
+    id: 3, name: '3D объём', price: 2200, duration: '120 мин',
+    category: 'lash', description: 'Объёмный эффект. Взгляд становится выразительным, но остаётся естественным.',
+    gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', isPopular: true
   },
   {
-    id: 4,
-    category: 'lash',
-    name: 'Голливудское наращивание 5D+',
-    price: 3000,
-    duration: '150 мин',
-    description: 'Максимальный объём и драма. Для особых случаев и незабываемого взгляда.',
-    isPopular: false,
-    order: 4,
+    id: 4, name: 'Голливудский объём', price: 2800, duration: '150 мин',
+    category: 'lash', description: 'Максимальный объём для особых случаев. Глаза как у звезды.',
+    gradient: 'linear-gradient(135deg, #fa709a, #fee140)', isPopular: true
   },
   {
-    id: 5,
-    category: 'lamination',
-    name: 'Ламинирование ресниц',
-    price: 1800,
-    duration: '60 мин',
-    description: 'Придаёт естественный изгиб, блеск и здоровый вид. Без наращивания — только твои ресницы, но идеальные.',
-    isPopular: true,
-    order: 5,
+    id: 5, name: 'Ламинирование', price: 2000, duration: '60 мин',
+    category: 'lamination', description: 'Подкрутка и укрепление натуральных ресниц. Эффект туши на месяц.',
+    gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)', isPopular: true
   },
   {
-    id: 6,
-    category: 'lamination',
-    name: 'Ботокс для ресниц',
-    price: 1500,
-    duration: '45 мин',
-    description: 'Укрепляющая процедура с эффектом питания и восстановления. Ресницы становятся гуще и крепче.',
-    isPopular: false,
-    order: 6,
+    id: 6, name: 'Коррекция', price: 800, duration: '40 мин',
+    category: 'correction', description: 'Обновление наращённых ресниц. Рекомендуется каждые 2-3 недели.',
+    gradient: 'linear-gradient(135deg, #ffecd2, #fcb69f)', isPopular: true
   },
   {
-    id: 7,
-    category: 'correction',
-    name: 'Коррекция наращивания',
-    price: 800,
-    duration: '40 мин',
-    description: 'Обновление ресниц через 2-3 недели. Удаление отросших и подсевших, добавление новых.',
-    isPopular: false,
-    order: 7,
+    id: 7, name: 'Снятие ресниц', price: 400, duration: '20 мин',
+    category: 'removal', description: 'Аккуратное снятие наращённых ресниц без повреждения натуральных.',
+    gradient: 'linear-gradient(135deg, #89f7fe, #66a6ff)', isPopular: false
   },
   {
-    id: 8,
-    category: 'removal',
-    name: 'Снятие ресниц',
-    price: 300,
-    duration: '20 мин',
-    description: 'Бережное и аккуратное удаление искусственных ресниц без повреждения натуральных.',
-    isPopular: false,
-    order: 8,
-  },
-  {
-    id: 9,
-    category: 'additional',
-    name: 'Чистка лица (ультразвук)',
-    price: 2000,
-    duration: '60 мин',
-    description: 'Глубокая очистка пор, удаление чёрных точек. Кожа дышит и сияет.',
-    isPopular: false,
-    order: 9,
-  },
-  {
-    id: 10,
-    category: 'additional',
-    name: 'Массаж лица',
-    price: 1500,
-    duration: '45 мин',
-    description: 'Расслабляющий массаж для снятия напряжения и улучшения тонуса кожи.',
-    isPopular: false,
-    order: 10,
-  },
+    id: 8, name: 'Ботокс для ресниц', price: 1500, duration: '40 мин',
+    category: 'lamination', description: 'Укрепляющая процедура для тонких и ослабленных ресниц.',
+    gradient: 'linear-gradient(135deg, #fddb92, #d1fdff)', isPopular: false
+  }
+];
+
+const CATEGORIES = [
+  { id: 'all', label: 'Все работы' },
+  { id: 'lash', label: 'Наращивание' },
+  { id: 'lamination', label: 'Ламинирование' },
+  { id: 'correction', label: 'Коррекция' },
+  { id: 'removal', label: 'Снятие' }
 ];
 
 const WORKS = [
   { id: 1, category: 'lash', serviceName: 'Классическое наращивание', date: 'Май 2026' },
-  { id: 2, category: 'lash', serviceName: 'Объёмное наращивание 2D', date: 'Май 2026' },
-  { id: 3, category: 'lash', serviceName: 'Объёмное наращивание 3D', date: 'Апрель 2026' },
-  { id: 4, category: 'lash', serviceName: 'Голливудское наращивание 5D+', date: 'Апрель 2026' },
-  { id: 5, category: 'lamination', serviceName: 'Ламинирование ресниц', date: 'Май 2026' },
-  { id: 6, category: 'lamination', serviceName: 'Ботокс для ресниц', date: 'Апрель 2026' },
-  { id: 7, category: 'lash', serviceName: 'Классическое наращивание', date: 'Апрель 2026' },
-  { id: 8, category: 'lash', serviceName: 'Объёмное наращивание 3D', date: 'Март 2026' },
-  { id: 9, category: 'correction', serviceName: 'Коррекция', date: 'Май 2026' },
-  { id: 10, category: 'lamination', serviceName: 'Ламинирование + Ботокс', date: 'Март 2026' },
-  { id: 11, category: 'lash', serviceName: 'Объёмное наращивание 2D', date: 'Март 2026' },
-  { id: 12, category: 'lash', serviceName: 'Классическое наращивание', date: 'Февраль 2026' },
-  { id: 13, category: 'additional', serviceName: 'Массаж лица', date: 'Май 2026' },
-  { id: 14, category: 'lash', serviceName: 'Голливудское наращивание 5D+', date: 'Февраль 2026' },
+  { id: 2, category: 'lash', serviceName: '2D объём', date: 'Май 2026' },
+  { id: 3, category: 'lamination', serviceName: 'Ламинирование', date: 'Апрель 2026' },
+  { id: 4, category: 'lash', serviceName: '3D объём', date: 'Апрель 2026' },
+  { id: 5, category: 'correction', serviceName: 'Коррекция', date: 'Май 2026' },
+  { id: 6, category: 'lash', serviceName: 'Голливудский объём', date: 'Апрель 2026' },
+  { id: 7, category: 'lamination', serviceName: 'Ламинирование', date: 'Май 2026' },
+  { id: 8, category: 'lash', serviceName: 'Классическое наращивание', date: 'Апрель 2026' },
+  { id: 9, category: 'removal', serviceName: 'Снятие ресниц', date: 'Март 2026' },
+  { id: 10, category: 'lash', serviceName: '2D объём', date: 'Март 2026' },
+  { id: 11, category: 'correction', serviceName: 'Коррекция', date: 'Апрель 2026' },
+  { id: 12, category: 'lash', serviceName: '3D объём', date: 'Март 2026' },
 ];
 
 const REVIEWS = [
   {
-    id: 1,
-    name: 'Екатерина',
-    rating: 5,
-    text: 'Ходила к Алисе первый раз — очень довольна! Реснички получились невероятно красивые и натуральные. Мастер приятная, всё объяснила, подобрала идеальный изгиб. Буду ходить теперь только к ней!',
-    date: '15.05.2026',
-    service: 'Классическое наращивание',
+    id: 1, name: 'Екатерина', rating: 5,
+    text: 'Ходила к Алисе первый раз — очень довольна! Реснички получились невероятно красивые, взгляд сразу изменился. Обязательно приду ещё.',
+    service: 'Классическое наращивание', date: '15.05.2026'
   },
   {
-    id: 2,
-    name: 'Анна',
-    rating: 5,
-    text: 'Давно искала мастера, который сделает именно то, что я хочу. Алиса услышала все пожелания, результат превзошёл ожидания. Объём 3D — это любовь с первого взгляда. Спасибо!',
-    date: '10.05.2026',
-    service: 'Объёмное наращивание 3D',
+    id: 2, name: 'Анна', rating: 5,
+    text: 'Делаю ламинирование у Алисы уже второй раз. Ресницы стали заметно гуще и длиннее, никакой туши не надо. Очень аккуратная работа.',
+    service: 'Ламинирование', date: '10.05.2026'
   },
   {
-    id: 3,
-    name: 'Марина',
-    rating: 4,
-    text: 'Делала ламинирование впервые. Ресницы стали блестящими и пушистыми, изгиб держится отлично. Процедура прошла комфортно. Единственное — хотелось бы чуть подольше эффект, но это уже индивидуально.',
-    date: '02.05.2026',
-    service: 'Ламинирование ресниц',
+    id: 3, name: 'Марина', rating: 5,
+    text: 'Записалась на 3D объём по рекомендации подруги. Результат превзошёл ожидания! Алиса приятная в общении, всё объяснила и подобрала идеальный изгиб.',
+    service: '3D объём', date: '02.05.2026'
   },
   {
-    id: 4,
-    name: 'Светлана',
-    rating: 5,
-    text: 'Очень аккуратная работа! Алиса настоящий профессионал. Видно, что мастер любит своё дело. Кресло удобное, атмосфера уютная, музыка приятная. Уже записалась на коррекцию. Рекомендую!',
-    date: '25.04.2026',
-    service: 'Объёмное наращивание 2D',
+    id: 4, name: 'Ольга', rating: 5,
+    text: 'Очень трепетное отношение к клиентам. Алиса учла все мои пожелания, подсказала какой объём лучше подойдёт. Носить комфортно, не чувствуются.',
+    service: '2D объём', date: '25.04.2026'
   },
   {
-    id: 5,
-    name: 'Ольга',
-    rating: 5,
-    text: 'Пришла снять старые ресницы и сделать новые. Сняли очень аккуратно, без повреждений. Классика смотрится шикарно, муж заметил разницу. Теперь только к Алисе!',
-    date: '18.04.2026',
-    service: 'Снятие + Классическое наращивание',
+    id: 5, name: 'Светлана', rating: 4,
+    text: 'Хороший мастер, работает аккуратно. Реснички держатся долго, отпадают равномерно. Единственное — хотелось бы побольше времени на процедуру.',
+    service: 'Классическое наращивание', date: '18.04.2026'
   },
   {
-    id: 6,
-    name: 'Дарья',
-    rating: 5,
-    text: 'Решилась на голливудский объём перед свадьбой подруги. Это было потрясающе! Взгляд просто бомбический. Все подруги спрашивали, где делала. Алиса, ты волшебница!',
-    date: '08.04.2026',
-    service: 'Голливудское наращивание 5D+',
-  },
-];
-
-const CATEGORIES = [
-  { id: 'all', label: 'Все' },
-  { id: 'lash', label: 'Наращивание' },
-  { id: 'lamination', label: 'Ламинирование' },
-  { id: 'correction', label: 'Коррекция' },
-  { id: 'removal', label: 'Снятие' },
-  { id: 'additional', label: 'Косметология' },
+    id: 6, name: 'Дарья', rating: 5,
+    text: 'Делала голливудский объём на выпускной. Все гости спрашивали где я делала ресницы! Алиса — настоящий профессионал, рекомендую всем.',
+    service: 'Голливудский объём', date: '10.04.2026'
+  }
 ];
