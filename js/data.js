@@ -2,7 +2,7 @@ const MASTER = {
   name: 'Алиса',
   city: 'Воронеж',
   tagline: 'Создаю взгляд, который запоминается',
-  tg: '@AliceV_36',
+  tg: 'Telegram',
   phone: '+7 (900) 000-00-00',
   instagram: '@alice.lash',
   schedule: '2/2, с 10:00 до 20:00',
