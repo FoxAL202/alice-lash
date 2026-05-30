@@ -332,6 +332,12 @@ body {
   font-size: 14px;
 }
 
+.hero-svg {
+  width: 100%;
+  height: 100%;
+  padding: 32px;
+}
+
 .hero-scroll-indicator {
   position: absolute;
   bottom: 40px;
@@ -351,6 +357,13 @@ body {
 @keyframes bounce {
   0%, 100% { transform: translateX(-50%) translateY(0); }
   50% { transform: translateX(-50%) translateY(8px); }
+}
+
+.typing-text {
+  display: inline-block;
+  min-width: 16ch;
+  white-space: nowrap;
+  vertical-align: bottom;
 }
 
 .typing-text::after {
@@ -416,6 +429,23 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
+}
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+.section-btn-wrap {
+  margin-top: 40px;
+}
+
+.reviews-btn-wrap {
+  margin-top: 32px;
+}
+
+.section-subtitle-cta {
+  margin: 0 auto;
 }
 
 /* ===== ADVANTAGES ===== */

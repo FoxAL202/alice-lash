@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ===== TYPING TEXT ===== */
   const typingElement = document.querySelector('.typing-text');
   if (typingElement) {
-    const words = ['запоминается', 'сияет', 'вдохновляет', 'очаровывает'];
+    const words = ['запоминается', 'сияет', 'вдохновляет', 'завораживает', 'притягивает', 'очаровывает'];
     let wordIndex = 0, charIndex = 0, isDeleting = false;
 
     function typeEffect() {
