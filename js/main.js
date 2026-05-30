@@ -179,10 +179,13 @@ function setupFormHandler(form, successEl) {
 /* ===== MAIN ===== */
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* ===== HEADER SCROLL ===== */
+  /* ===== HEADER SCROLL + SCROLL INDICATOR ===== */
   const header = document.querySelector('.header');
+  const scrollIndicator = document.querySelector('.hero-scroll-indicator');
   window.addEventListener('scroll', () => {
-    header?.classList.toggle('scrolled', window.pageYOffset > 50);
+    const scrolled = window.pageYOffset > 50;
+    header?.classList.toggle('scrolled', scrolled);
+    if (scrollIndicator) scrollIndicator.classList.toggle('hidden', scrolled);
   });
 
   /* ===== BURGER MENU ===== */
