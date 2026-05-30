@@ -1273,6 +1273,19 @@ body {
   font-size: 48px;
 }
 
+/* ===== REVIEWS GRID (reviews.html) ===== */
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .reviews-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ===== ANIMATIONS ===== */
 .reveal {
   opacity: 0;

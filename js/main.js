@@ -1,17 +1,188 @@
+/* ===== SCROLL REVEAL (module level — доступен из любого места) ===== */
+const revealObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+);
+
+/* ===== LIGHTBOX ===== */
+function initLightbox() {
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImage = lightbox?.querySelector('.lightbox-image');
+  const lightboxClose = lightbox?.querySelector('.lightbox-close');
+  const lightboxPrev = lightbox?.querySelector('.lightbox-prev');
+  const lightboxNext = lightbox?.querySelector('.lightbox-next');
+  const lightboxCounter = lightbox?.querySelector('.lightbox-counter');
+  let currentIndex = 0;
+  let items = [];
+
+  if (!lightbox) return;
+
+  function updateItems() {
+    items = Array.from(document.querySelectorAll('.gallery-item')).filter(
+      el => el.style.display !== 'none'
+    );
+  }
+
+  function openLightbox(index) {
+    updateItems();
+    if (items.length === 0) return;
+    currentIndex = index;
+    const name = items[currentIndex].querySelector('.gallery-item-overlay span')?.textContent || 'Фото работы';
+    lightboxImage.src = '';
+    lightboxImage.alt = name;
+    lightboxImage.style.background = 'linear-gradient(135deg, #1a1a2e, #222240)';
+    lightboxImage.style.width = '400px';
+    lightboxImage.style.height = '300px';
+    lightboxImage.style.objectFit = 'contain';
+    lightboxImage.style.borderRadius = '12px';
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    updateCounter();
+  }
+
+  function updateCounter() {
+    updateItems();
+    if (items.length > 0) {
+      lightboxCounter.textContent = `${currentIndex + 1} / ${items.length}`;
+    }
+  }
+
+  function attachLightboxClicks() {
+    document.querySelectorAll('.gallery-item').forEach((item, index) => {
+      item.addEventListener('click', () => openLightbox(index));
+    });
+  }
+
+  function navigateLightbox(direction) {
+    updateItems();
+    if (items.length === 0) return;
+    currentIndex = (currentIndex + direction + items.length) % items.length;
+    const name = items[currentIndex].querySelector('.gallery-item-overlay span')?.textContent || 'Фото работы';
+    lightboxImage.alt = name;
+    updateCounter();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  attachLightboxClicks();
+
+  if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+  if (lightboxPrev) lightboxPrev.addEventListener('click', () => navigateLightbox(-1));
+  if (lightboxNext) lightboxNext.addEventListener('click', () => navigateLightbox(1));
+
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') navigateLightbox(-1);
+    if (e.key === 'ArrowRight') navigateLightbox(1);
+  });
+
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  return { attachLightboxClicks };
+}
+
+/* ===== PHONE MASK ===== */
+function applyPhoneMask(input) {
+  if (!input) return;
+  input.addEventListener('input', () => {
+    let value = input.value.replace(/\D/g, '');
+    if (value.length > 0) {
+      if (value.startsWith('7')) value = '+7' + value.substring(1);
+      else if (value.startsWith('8')) value = '+7' + value.substring(1);
+      else value = '+7' + value;
+    }
+    if (value.length > 2) value = value.substring(0, 2) + ' (' + value.substring(2);
+    if (value.length > 7) value = value.substring(0, 7) + ') ' + value.substring(7);
+    if (value.length > 12) value = value.substring(0, 12) + '-' + value.substring(12);
+    if (value.length > 15) value = value.substring(0, 15) + '-' + value.substring(15);
+    if (value.length > 18) value = value.substring(0, 18);
+    input.value = value;
+  });
+}
+
+/* ===== FORM HANDLER GENERIC ===== */
+function setupFormHandler(form, successEl) {
+  if (!form) return;
+
+  const phoneInput = form.querySelector('input[name="phone"]');
+  const serviceSelect = form.querySelector('select[name="service"]');
+  const submitBtn = form.querySelector('button[type="submit"]');
+
+  if (serviceSelect && typeof SERVICES !== 'undefined') {
+    serviceSelect.innerHTML = '<option value="">Выберите услугу</option>' +
+      SERVICES.map(s => `<option value="${s.name}">${s.name} — ${s.price} ₽</option>`).join('');
+  }
+
+  applyPhoneMask(phoneInput);
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let isValid = true;
+
+    const name = form.querySelector('input[name="name"]');
+    const agreement = form.querySelector('input[name="agreement"]');
+    const fields = [name, phoneInput];
+
+    fields.forEach(field => {
+      if (!field) return;
+      const errorEl = field.closest('.form-group')?.querySelector('.form-error');
+      if (!field.value.trim()) {
+        field.classList.add('error');
+        if (errorEl) errorEl.classList.add('visible');
+        isValid = false;
+      } else {
+        field.classList.remove('error');
+        if (errorEl) errorEl.classList.remove('visible');
+      }
+    });
+
+    if (phoneInput) {
+      const errorEl = phoneInput.closest('.form-group')?.querySelector('.form-error');
+      const phoneClean = phoneInput.value.replace(/\D/g, '');
+      if (phoneClean.length < 11) {
+        phoneInput.classList.add('error');
+        if (errorEl) {
+          errorEl.textContent = 'Введите корректный номер';
+          errorEl.classList.add('visible');
+        }
+        isValid = false;
+      }
+    }
+
+    if (!isValid) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Отправка...';
+
+    const fd = new FormData(form);
+    fd.set('_subject', 'Новая запись к Алисе');
+
+    fetch(form.action, { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } })
+      .then(() => { form.style.display = 'none'; if (successEl) successEl.classList.add('visible'); })
+      .catch(() => { form.style.display = 'none'; if (successEl) successEl.classList.add('visible'); });
+  });
+}
+
+/* ===== MAIN ===== */
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ===== HEADER SCROLL ===== */
   const header = document.querySelector('.header');
-  let lastScroll = 0;
-
   window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    if (currentScroll > 50) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-    lastScroll = currentScroll;
+    header?.classList.toggle('scrolled', window.pageYOffset > 50);
   });
 
   /* ===== BURGER MENU ===== */
@@ -34,51 +205,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ===== SCROLL REVEAL ===== */
-  const revealElements = document.querySelectorAll('.reveal');
-
-  const revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-  );
-
-  revealElements.forEach(el => revealObserver.observe(el));
-
-  /* ===== TYPING TEXT IN HERO ===== */
+  /* ===== TYPING TEXT ===== */
   const typingElement = document.querySelector('.typing-text');
   if (typingElement) {
     const words = ['запоминается', 'сияет', 'вдохновляет', 'очаровывает'];
-    let wordIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let isPaused = false;
+    let wordIndex = 0, charIndex = 0, isDeleting = false;
 
     function typeEffect() {
       const currentWord = words[wordIndex];
-      const typingEl = typingElement;
-
       if (!isDeleting) {
-        typingEl.textContent = currentWord.substring(0, charIndex + 1);
+        typingElement.textContent = currentWord.substring(0, charIndex + 1);
         charIndex++;
         if (charIndex === currentWord.length) {
-          isPaused = true;
-          setTimeout(() => {
-            isPaused = false;
-            isDeleting = true;
-            typeEffect();
-          }, 2000);
+          setTimeout(() => { isDeleting = true; typeEffect(); }, 2000);
           return;
         }
         setTimeout(typeEffect, 80);
       } else {
-        typingEl.textContent = currentWord.substring(0, charIndex);
+        typingElement.textContent = currentWord.substring(0, charIndex);
         charIndex--;
         if (charIndex < 0) {
           isDeleting = false;
@@ -89,19 +233,106 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(typeEffect, 40);
       }
     }
-
     setTimeout(typeEffect, 1500);
   }
 
-  /* ===== PORTFOLIO FILTER + GALLERY ===== */
+  /* ===== POPULAR SERVICES (index.html) ===== */
+  const popularGrid = document.getElementById('popularGrid');
+  if (popularGrid) {
+    const popular = SERVICES.filter(s => s.isPopular).slice(0, 3);
+    popularGrid.innerHTML = popular.map(s => `
+      <div class="service-card reveal">
+        <div class="service-card-image">
+          <div class="placeholder">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 3c2.5 3 4 6.5 4 9s-1.5 6-4 9"/>
+              <path d="M12 3c-2.5 3-4 6.5-4 9s1.5 6 4 9"/>
+            </svg>
+            <span style="display:block;margin-top:8px;font-size:12px;opacity:0.6">${s.name}</span>
+          </div>
+        </div>
+        <div class="service-card-body">
+          <div class="service-card-category">${CATEGORIES.find(c => c.id === s.category)?.label || s.category}</div>
+          <h3 class="service-card-title">${s.name}</h3>
+          <p class="service-card-desc">${s.description}</p>
+          <div class="service-card-footer">
+            <span class="service-card-price">${s.price.toLocaleString()} ₽</span>
+            <span class="service-card-duration">${s.duration}</span>
+          </div>
+          <a href="services.html" class="btn btn-primary btn-sm">Подробнее</a>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ===== PREVIEW GALLERY (index.html) ===== */
+  const previewGallery = document.getElementById('previewGallery');
+  if (previewGallery) {
+    previewGallery.innerHTML = WORKS.slice(0, 4).map(w => `
+      <div class="gallery-item reveal">
+        <div class="gallery-placeholder">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="2" width="20" height="20" rx="2"/>
+            <circle cx="9" cy="9" r="2"/>
+            <path d="m21 15-5-5L5 21"/>
+          </svg>
+        </div>
+        <div class="gallery-item-overlay">
+          <span>${w.serviceName}</span>
+          <small>${w.date}</small>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ===== REVIEWS CONTENT ===== */
+  const reviewsTrack = document.getElementById('reviewsTrack');
+  if (reviewsTrack) {
+    reviewsTrack.innerHTML = REVIEWS.map(r => `
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">${r.name.charAt(0)}</div>
+          <div class="review-author">
+            <div class="review-name">${r.name}</div>
+            <div class="review-date">${r.date}</div>
+          </div>
+          <div class="review-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+        </div>
+        <p class="review-text">"${r.text}"</p>
+        <div class="review-service">${r.service}</div>
+      </div>
+    `).join('');
+  }
+
+  const reviewsGrid = document.getElementById('reviewsGrid');
+  if (reviewsGrid) {
+    reviewsGrid.innerHTML = REVIEWS.map(r => `
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">${r.name.charAt(0)}</div>
+          <div class="review-author">
+            <div class="review-name">${r.name}</div>
+            <div class="review-date">${r.date}</div>
+          </div>
+          <div class="review-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+        </div>
+        <p class="review-text">"${r.text}"</p>
+        <div class="review-service">${r.service}</div>
+      </div>
+    `).join('');
+  }
+
+  /* ===== LIGHTBOX ===== */
+  const lightboxApi = initLightbox();
+
+  /* ===== PORTFOLIO FILTER + GALLERY (portfolio.html) ===== */
   const galleryGrid = document.getElementById('galleryGrid');
   const filterBar = document.getElementById('filterBar');
 
   if (galleryGrid && filterBar) {
     function renderGallery(category = 'all') {
-      const filtered = category === 'all'
-        ? WORKS
-        : WORKS.filter(w => w.category === category);
+      const filtered = category === 'all' ? WORKS : WORKS.filter(w => w.category === category);
 
       galleryGrid.innerHTML = filtered.map(work => `
         <div class="gallery-item reveal" data-id="${work.id}" data-category="${work.category}">
@@ -111,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <circle cx="9" cy="9" r="2"/>
               <path d="m21 15-5-5L5 21"/>
             </svg>
+            <span style="display:block;margin-top:8px;font-size:12px;opacity:0.6">${work.serviceName}</span>
           </div>
           <div class="gallery-item-overlay">
             <span>${work.serviceName}</span>
@@ -119,30 +351,12 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `).join('');
 
-      filtered.forEach(work => {
-        const item = galleryGrid.querySelector(`[data-id="${work.id}"]`);
-        if (item) {
-          const placeholder = item.querySelector('.gallery-placeholder');
-          placeholder.innerHTML = `
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="2" y="2" width="20" height="20" rx="2"/>
-              <circle cx="9" cy="9" r="2"/>
-              <path d="m21 15-5-5L5 21"/>
-            </svg>
-            <span style="display:block;margin-top:8px;font-size:12px;opacity:0.6">${work.serviceName}</span>
-          `;
-        }
-      });
-
-      document.querySelectorAll('.gallery-item').forEach(item => {
-        revealObserver.observe(item);
-      });
-
-      initLightbox();
+      galleryGrid.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+      lightboxApi?.attachLightboxClicks();
     }
 
     function renderFilters() {
-      filterBar.innerHTML = CATEGORIES.map(cat => `
+      filterBar.innerHTML = CATEGORIES.filter(c => c.id !== 'removal').map(cat => `
         <button class="filter-btn ${cat.id === 'all' ? 'active' : ''}" data-filter="${cat.id}">
           ${cat.label}
         </button>
@@ -161,94 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderGallery('all');
   }
 
-  /* ===== LIGHTBOX ===== */
-  function initLightbox() {
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImage = lightbox?.querySelector('.lightbox-image');
-    const lightboxClose = lightbox?.querySelector('.lightbox-close');
-    const lightboxPrev = lightbox?.querySelector('.lightbox-prev');
-    const lightboxNext = lightbox?.querySelector('.lightbox-next');
-    const lightboxCounter = lightbox?.querySelector('.lightbox-counter');
-    let currentIndex = 0;
-    let items = [];
-
-    if (!lightbox) return;
-
-    function updateItems() {
-      items = document.querySelectorAll('.gallery-item:not([style*="display: none"])');
-    }
-
-    function openLightbox(index) {
-      updateItems();
-      if (items.length === 0) return;
-      currentIndex = index;
-      const item = items[currentIndex];
-      const name = item.querySelector('.gallery-item-overlay span')?.textContent || 'Фото работы';
-      lightboxImage.src = '';
-      lightboxImage.alt = name;
-      lightboxImage.style.background = 'linear-gradient(135deg, #1a1a2e, #222240)';
-      lightboxImage.style.width = '400px';
-      lightboxImage.style.height = '300px';
-      lightboxImage.style.objectFit = 'contain';
-      lightboxImage.style.borderRadius = '12px';
-      lightbox.classList.add('active');
-      document.body.style.overflow = 'hidden';
-      updateCounter();
-    }
-
-    function updateCounter() {
-      updateItems();
-      if (items.length > 0) {
-        lightboxCounter.textContent = `${currentIndex + 1} / ${items.length}`;
-      }
-    }
-
-    document.querySelectorAll('.gallery-item').forEach((item, index) => {
-      item.addEventListener('click', () => {
-        openLightbox(index);
-      });
-    });
-
-    function navigateLightbox(direction) {
-      updateItems();
-      if (items.length === 0) return;
-      currentIndex = (currentIndex + direction + items.length) % items.length;
-      const item = items[currentIndex];
-      const name = item.querySelector('.gallery-item-overlay span')?.textContent || 'Фото работы';
-      lightboxImage.alt = name;
-      updateCounter();
-    }
-
-    if (lightboxClose) {
-      lightboxClose.addEventListener('click', closeLightbox);
-    }
-
-    if (lightboxPrev) {
-      lightboxPrev.addEventListener('click', () => navigateLightbox(-1));
-    }
-
-    if (lightboxNext) {
-      lightboxNext.addEventListener('click', () => navigateLightbox(1));
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (!lightbox.classList.contains('active')) return;
-      if (e.key === 'Escape') closeLightbox();
-      if (e.key === 'ArrowLeft') navigateLightbox(-1);
-      if (e.key === 'ArrowRight') navigateLightbox(1);
-    });
-
-    lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) closeLightbox();
-    });
-
-    function closeLightbox() {
-      lightbox.classList.remove('active');
-      document.body.style.overflow = '';
-    }
-  }
-
-  /* ===== REVIEWS CAROUSEL ===== */
+  /* ===== REVIEWS CAROUSEL (index.html) ===== */
   const track = document.querySelector('.reviews-track');
   const dotsContainer = document.getElementById('carouselDots');
   let currentSlide = 0;
@@ -269,13 +396,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function goToSlide(index) {
-      const slidesPerView = getSlidesPerView();
-      currentSlide = Math.max(0, Math.min(index, totalSlides - slidesPerView));
+      const spv = getSlidesPerView();
+      currentSlide = Math.max(0, Math.min(index, totalSlides - spv));
       const gap = 24;
-      const cardWidth = `calc(${100 / slidesPerView}% - ${gap * (slidesPerView - 1) / slidesPerView}px)`;
-      cards.forEach(c => c.style.minWidth = cardWidth);
-      track.style.transform = `translateX(-${currentSlide * (100 / slidesPerView)}%)`;
-
+      cards.forEach(c => c.style.minWidth = `calc(${100 / spv}% - ${gap * (spv - 1) / spv}px)`);
+      track.style.transform = `translateX(-${currentSlide * (100 / spv)}%)`;
       dotsContainer.querySelectorAll('.carousel-dot').forEach((dot, i) => {
         dot.classList.toggle('active', i === currentSlide);
       });
@@ -287,10 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let i = 0; i <= maxSlide; i++) {
         const dot = document.createElement('button');
         dot.className = `carousel-dot ${i === 0 ? 'active' : ''}`;
-        dot.addEventListener('click', () => {
-          goToSlide(i);
-          resetAutoplay();
-        });
+        dot.addEventListener('click', () => { goToSlide(i); resetAutoplay(); });
         dotsContainer.appendChild(dot);
       }
     }
@@ -298,22 +420,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function startAutoplay() {
       stopAutoplay();
       autoplayInterval = setInterval(() => {
-        const maxSlide = getMaxSlide();
-        if (currentSlide >= maxSlide) {
-          goToSlide(0);
-        } else {
-          goToSlide(currentSlide + 1);
-        }
+        goToSlide(currentSlide >= getMaxSlide() ? 0 : currentSlide + 1);
       }, 5000);
     }
 
-    function stopAutoplay() {
-      if (autoplayInterval) clearInterval(autoplayInterval);
-    }
-
-    function resetAutoplay() {
-      startAutoplay();
-    }
+    function stopAutoplay() { if (autoplayInterval) clearInterval(autoplayInterval); }
+    function resetAutoplay() { startAutoplay(); }
 
     track.addEventListener('mouseenter', stopAutoplay);
     track.addEventListener('mouseleave', startAutoplay);
@@ -325,14 +437,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        createDots();
-        goToSlide(0);
-      }, 300);
+      resizeTimer = setTimeout(() => { createDots(); goToSlide(0); }, 300);
     });
   }
 
-  /* ===== SERVICES PRICE TABLE / CALCULATOR ===== */
+  /* ===== PRICE TABLE / CALCULATOR (services.html) ===== */
   const servicesTable = document.getElementById('servicesTable');
   const calculatorList = document.getElementById('calculatorList');
   const calculatorTotal = document.getElementById('calculatorTotal');
@@ -341,9 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (servicesTable) {
     function renderPriceTable(category = 'all') {
-      const filtered = category === 'all'
-        ? SERVICES
-        : SERVICES.filter(s => s.category === category);
+      const filtered = category === 'all' ? SERVICES : SERVICES.filter(s => s.category === category);
 
       servicesTable.innerHTML = filtered.map(service => `
         <tr>
@@ -352,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td class="price">${service.price.toLocaleString()} ₽</td>
           <td>
             <button class="btn btn-primary btn-sm add-to-calc" data-id="${service.id}">
-              В заказ
+              ${selectedServices.find(s => s.id === service.id) ? '✓ В заказе' : 'В заказ'}
             </button>
           </td>
         </tr>
@@ -361,7 +468,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.add-to-calc').forEach(btn => {
         btn.addEventListener('click', () => {
           const id = parseInt(btn.dataset.id);
-          addToCalculator(id);
+          if (selectedServices.find(s => s.id === id)) {
+            removeFromCalculator(id);
+          } else {
+            addToCalculator(id);
+          }
         });
       });
     }
@@ -370,16 +481,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const tabsContainer = document.getElementById('categoryTabs');
       if (!tabsContainer) return;
 
-      const serviceCategories = [
+      tabsContainer.innerHTML = [
         { id: 'all', label: 'Все услуги' },
         { id: 'lash', label: 'Наращивание' },
         { id: 'lamination', label: 'Ламинирование' },
         { id: 'correction', label: 'Коррекция' },
         { id: 'removal', label: 'Снятие' },
         { id: 'additional', label: 'Косметология' },
-      ];
-
-      tabsContainer.innerHTML = serviceCategories.map(cat => `
+      ].map(cat => `
         <button class="filter-btn ${cat.id === 'all' ? 'active' : ''}" data-tab="${cat.id}">
           ${cat.label}
         </button>
@@ -396,47 +505,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addToCalculator(id) {
       const service = SERVICES.find(s => s.id === id);
-      if (!service) return;
-      if (selectedServices.find(s => s.id === id)) return;
+      if (!service || selectedServices.find(s => s.id === id)) return;
       selectedServices.push(service);
       updateCalculator();
+      renderPriceTable(document.querySelector('#categoryTabs .filter-btn.active')?.dataset.tab || 'all');
     }
 
     function removeFromCalculator(id) {
       selectedServices = selectedServices.filter(s => s.id !== id);
       updateCalculator();
+      renderPriceTable(document.querySelector('#categoryTabs .filter-btn.active')?.dataset.tab || 'all');
     }
 
     function updateCalculator() {
       if (!calculatorList || !calculatorTotal || !calcEmpty) return;
 
       if (selectedServices.length === 0) {
-        calculatorList.innerHTML = `<div class="calculator-empty">Добавьте услуги из прайса</div>`;
+        calculatorList.innerHTML = '<div class="calculator-empty">Добавьте услуги из прайса</div>';
         calcEmpty.style.display = 'block';
-        calculatorTotal.innerHTML = `
-          <span>Итого:</span>
-          <span class="total-price">0 ₽</span>
-        `;
+        calculatorTotal.innerHTML = '<span>Итого:</span><span class="total-price">0 ₽</span>';
         return;
       }
 
       calcEmpty.style.display = 'none';
       const total = selectedServices.reduce((sum, s) => sum + s.price, 0);
 
-      calculatorList.innerHTML = selectedServices.map(service => `
+      calculatorList.innerHTML = selectedServices.map(s => `
         <div class="calculator-item">
-          <span>${service.name}</span>
+          <span>${s.name}</span>
           <div style="display:flex;align-items:center;gap:12px;">
-            <span>${service.price.toLocaleString()} ₽</span>
-            <span class="calculator-item-remove" data-id="${service.id}">✕</span>
+            <span>${s.price.toLocaleString()} ₽</span>
+            <span class="calculator-item-remove" data-id="${s.id}">✕</span>
           </div>
         </div>
       `).join('');
 
-      calculatorTotal.innerHTML = `
-        <span>Итого:</span>
-        <span class="total-price">${total.toLocaleString()} ₽</span>
-      `;
+      calculatorTotal.innerHTML = `<span>Итого:</span><span class="total-price">${total.toLocaleString()} ₽</span>`;
 
       document.querySelectorAll('.calculator-item-remove').forEach(el => {
         el.addEventListener('click', () => {
@@ -450,113 +554,25 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCalculator();
   }
 
-  /* ===== FORM VALIDATION ===== */
+  /* ===== CONTACT FORM (contacts.html) ===== */
   const contactForm = document.getElementById('contactForm');
   const formSuccess = document.getElementById('formSuccess');
+  setupFormHandler(contactForm, formSuccess);
 
-  if (contactForm) {
-    const phoneInput = contactForm.querySelector('input[name="phone"]');
-    const serviceSelect = contactForm.querySelector('select[name="service"]');
+  /* ===== CTA FORM (index.html) ===== */
+  const ctaForm = document.getElementById('ctaForm');
+  const ctaSuccess = document.getElementById('ctaSuccess');
+  setupFormHandler(ctaForm, ctaSuccess);
 
-    if (serviceSelect && typeof SERVICES !== 'undefined') {
-      serviceSelect.innerHTML = '<option value="">Выберите услугу</option>' +
-        SERVICES.map(s => `<option value="${s.name}">${s.name} — ${s.price} ₽</option>`).join('');
-    }
+  /* ===== OBSERVE REVEAL ELEMENTS ===== */
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-    if (phoneInput) {
-      phoneInput.addEventListener('input', (e) => {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 0) {
-          if (value.startsWith('7')) value = '+7' + value.substring(1);
-          else if (value.startsWith('8')) value = '+7' + value.substring(1);
-          else value = '+7' + value;
-        }
-        if (value.length > 2) {
-          value = value.substring(0, 2) + ' (' + value.substring(2);
-        }
-        if (value.length > 7) {
-          value = value.substring(0, 7) + ') ' + value.substring(7);
-        }
-        if (value.length > 12) {
-          value = value.substring(0, 12) + '-' + value.substring(12);
-        }
-        if (value.length > 15) {
-          value = value.substring(0, 15) + '-' + value.substring(15);
-        }
-        if (value.length > 18) {
-          value = value.substring(0, 18);
-        }
-        e.target.value = value;
-      });
-    }
-
-    contactForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      let isValid = true;
-
-      const name = contactForm.querySelector('input[name="name"]');
-      const phone = contactForm.querySelector('input[name="phone"]');
-      const agreement = contactForm.querySelector('input[name="agreement"]');
-
-      const fields = [name, phone];
-      fields.forEach(field => {
-        const errorEl = field.parentElement.querySelector('.form-error');
-        if (!field.value.trim()) {
-          field.classList.add('error');
-          if (errorEl) errorEl.classList.add('visible');
-          isValid = false;
-        } else {
-          field.classList.remove('error');
-          if (errorEl) errorEl.classList.remove('visible');
-        }
-      });
-
-      if (phone) {
-        const errorEl = phone.parentElement.querySelector('.form-error');
-        const phoneClean = phone.value.replace(/\D/g, '');
-        if (phoneClean.length < 11) {
-          phone.classList.add('error');
-          if (errorEl) {
-            errorEl.textContent = 'Введите корректный номер телефона';
-            errorEl.classList.add('visible');
-          }
-          isValid = false;
-        }
-      }
-
-      if (isValid) {
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Отправка...';
-
-        const formData = new FormData(contactForm);
-        formData.set('_subject', 'Новая запись к Алисе');
-
-        fetch(contactForm.action, {
-          method: 'POST',
-          body: formData,
-          headers: { 'Accept': 'application/json' },
-        })
-        .then(() => {
-          contactForm.style.display = 'none';
-          formSuccess.classList.add('visible');
-        })
-        .catch(() => {
-          contactForm.style.display = 'none';
-          formSuccess.classList.add('visible');
-        });
-      }
-    });
-  }
-
-  /* ===== HEADER CTA SCROLL ===== */
+  /* ===== ANCHOR SMOOTH SCROLL ===== */
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', (e) => {
       e.preventDefault();
       const target = document.querySelector(anchor.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
 

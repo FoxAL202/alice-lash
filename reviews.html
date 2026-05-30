@@ -49,7 +49,7 @@
 
   <section class="section">
     <div class="container">
-      <div class="reviews-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px" id="reviewsGrid">
+      <div class="reviews-grid" id="reviewsGrid">
       </div>
     </div>
   </section>
@@ -105,45 +105,6 @@
   </footer>
 
   <script src="js/data.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const grid = document.getElementById('reviewsGrid');
-      if (grid) {
-        grid.innerHTML = REVIEWS.map(r => `
-          <div class="review-card">
-            <div class="review-header">
-              <div class="review-avatar">${r.name.charAt(0)}</div>
-              <div class="review-author">
-                <div class="review-name">${r.name}</div>
-                <div class="review-date">${r.date}</div>
-              </div>
-              <div class="review-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-            </div>
-            <p class="review-text">"${r.text}"</p>
-            <div class="review-service">${r.service}</div>
-          </div>
-        `).join('');
-      }
-
-      const reviewsTrack = document.getElementById('reviewsTrack');
-      if (reviewsTrack) {
-        reviewsTrack.innerHTML = REVIEWS.map(r => `
-          <div class="review-card">
-            <div class="review-header">
-              <div class="review-avatar">${r.name.charAt(0)}</div>
-              <div class="review-author">
-                <div class="review-name">${r.name}</div>
-                <div class="review-date">${r.date}</div>
-              </div>
-              <div class="review-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
-            </div>
-            <p class="review-text">"${r.text}"</p>
-            <div class="review-service">${r.service}</div>
-          </div>
-        `).join('');
-      }
-    });
-  </script>
   <script src="js/main.js"></script>
 </body>
 </html>
